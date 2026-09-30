@@ -1,0 +1,60 @@
+% Standalone-includable TikZ flowchart of the experimental pipeline.
+% Compiled as part of main.tex (Figure: System and Pipeline Architecture).
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[
+    node distance=0.9cm and 1.3cm,
+    box/.style={rectangle, rounded corners, draw=black!70, thick,
+                fill=blue!6, minimum width=2.7cm, minimum height=1.0cm,
+                align=center, font=\small},
+    iobox/.style={trapezium, trapezium left angle=70, trapezium right angle=110,
+                  draw=black!70, thick, fill=orange!10,
+                  minimum width=2.6cm, minimum height=0.9cm, align=center, font=\small},
+    decision/.style={diamond, draw=black!70, thick, fill=green!8,
+                      minimum width=2.2cm, minimum height=1.0cm, align=center,
+                      font=\small, inner sep=1pt},
+    arr/.style={-Stealth, thick},
+    label/.style={font=\scriptsize, midway, above, align=center}
+]
+
+% --- Row 1: inputs ---
+\node[iobox] (tasks) {Task pool\\(GSM8K / SQuAD 2.0)};
+\node[box, right=of tasks] (agents) {Agent pool\\construction\\($n$, structural deps,\\provider labels)};
+\node[box, right=of agents] (backend) {Backend\\(mock or real API)};
+
+% --- Row 2: per-agent processing ---
+\node[box, below=of backend] (responses) {Per-agent\\responses};
+\node[box, left=of responses] (scorer) {Domain scorer\\(canonical answer,\\correctness)};
+\node[decision, left=of scorer, minimum width=2.4cm] (kappa) {$\kappa_E$\\structural\\safety check};
+
+% --- Row 3: aggregation ---
+\node[box, below=of scorer] (quorum) {Quorum\\aggregation\\(majority vote)};
+\node[box, right=of quorum] (fc) {False-consensus /\\correctness\\determination};
+
+% --- Row 4: measurement and analysis ---
+\node[box, below=of quorum] (corr) {Pairwise correlation\\measurement\\($\hat\phi$, co-error, MI)};
+\node[box, right=of corr] (metrics) {Metrics\\(FC rate, agreement\\rate, accuracy)};
+\node[box, right=of metrics] (stats) {Pre-registered\\statistical analysis\\(power-analyzed tests,\\BH--FDR)};
+
+% --- Row 5: output ---
+\node[iobox, below=of stats] (results) {Results\\(pending real\\execution, \S9)};
+
+% arrows
+\draw[arr] (tasks) -- (agents);
+\draw[arr] (agents) -- (backend);
+\draw[arr] (backend) -- (responses);
+\draw[arr] (responses) -- (scorer);
+\draw[arr] (scorer) -- (kappa) node[label, pos=0.5, above]{};
+\draw[arr] (scorer) -- (quorum);
+\draw[arr] (kappa) |- (quorum);
+\draw[arr] (quorum) -- (fc);
+\draw[arr] (quorum) -- (corr);
+\draw[arr] (fc) -- (metrics);
+\draw[arr] (corr) -- (metrics);
+\draw[arr] (metrics) -- (stats);
+\draw[arr] (stats) -- (results);
+
+\end{tikzpicture}
+\caption{System and experimental pipeline architecture. Each task is posed to an $n$-agent quorum built with a specified structural-dependency configuration and provider-label composition (\S\ref{sec:system-model}). Per-agent responses are scored against ground truth by a domain-specific scorer (\S\ref{sec:data}), aggregated by majority vote, and checked for structural ($\kappa_E$) safety (\S\ref{sec:structural}) in parallel. Pairwise error correlation is measured directly from per-agent correctness rather than assumed from the provider label (\S\ref{sec:correlation}), feeding a pre-registered statistical analysis (\S\ref{sec:power}). This pipeline has been executed end to end against a synthetic backend with known ground truth (\S\ref{sec:validation}); execution against a real backend is pending API access.}
+\label{fig:flowchart}
+\end{figure*}
