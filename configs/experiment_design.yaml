@@ -1,0 +1,46 @@
+# Pre-registered factorial design. Matches POWER_ANALYSIS.md exactly --
+# this file is the machine-readable form of that pre-registration, not an
+# independent decision. Changing N, factors, or levels here after real
+# execution begins would violate the pre-registration and must not be done
+# without an explicit, logged amendment (see FINAL_RESEARCH_STATUS.md for
+# the amendment log, currently empty).
+
+design_name: "structural_vs_provider_basis_v1"
+primary_hypothesis: "H1: among kappa_E-safe (structural-basis-safe) quorums, false-consensus rate is higher under high measured mean-pairwise-phi than under low measured mean-pairwise-phi."
+primary_endpoint: "false_consensus_rate"
+primary_test: "two_proportion_z_test"     # src/statistics/hypothesis_tests.py:two_proportion_test
+secondary_model: "logistic_regression"     # src/statistics/hypothesis_tests.py:logistic_regression_false_consensus
+
+factors:
+  structural:
+    levels: ["kappa_E_unsafe", "kappa_E_safe"]
+    description: "Whether agents in the quorum share a structural/evidence-root fault-basis dependency (src/structural/fault_basis.py)."
+  correlation_level:
+    levels: ["low", "medium", "high"]
+    description: "Target provider/parametric-lineage correlation cluster composition among agents. 'low' = all agents from distinct provider clusters; 'high' = all agents from the same provider cluster; 'medium' = mixed. Realized correlation is MEASURED (src/correlation/measures.py), not assumed from this label -- this label only controls agent-pool COMPOSITION, per CORRELATION_MEASUREMENT.md's explicit rejection of label-as-independence."
+  quorum_size:
+    levels: [3, 5]
+    description: "n agents per quorum; majority threshold q = floor(n/2)+1."
+  domain:
+    levels: ["gsm8k", "squad2"]
+    description: "See DATASET_FINALIZATION.md. FEVER was originally selected but is blocked in this environment (network policy); squad2 is the documented substitution."
+
+n_cells: 24   # 2 x 3 x 2 x 2
+
+sample_size:
+  tasks_per_cell: 350   # POWER_ANALYSIS.md Section 3/5: Bonferroni-adjusted power=0.80 for the primary low-vs-high contrast at n=5
+  seeds_per_task: 3     # POWER_ANALYSIS.md Section 6
+  seed_values: [20260930, 20260931, 20260932]   # fixed, logged, not resampled post hoc
+
+statistics:
+  alpha: 0.05
+  power_target: 0.80
+  multiple_comparisons_correction: "benjamini_hochberg"   # for pairwise-agent-level correlation significance tests (CORRELATION_MEASUREMENT.md Section 5); primary H1 test is a single pre-registered comparison and is NOT corrected
+  ci_method_reporting: "wilson_for_proportions_bootstrap_for_contrasts"   # POWER_ANALYSIS.md Section 7
+  ci_method_planning: "cohens_h_normal_approximation"                     # POWER_ANALYSIS.md Section 7 -- explicitly different from the reporting method
+
+estimated_cost:
+  total_agent_api_calls: 100800   # POWER_ANALYSIS.md Section 5
+  status: "BLOCKED -- no LLM API credentials available in the environment that produced this design (see FINAL_RESEARCH_STATUS.md). This config is ready to execute against a real backend once credentials are provisioned."
+
+amendments: []   # any post-hoc change to this file must be logged here with a timestamp and justification, never silently edited

@@ -23,17 +23,23 @@ Your original manuscript's central claim — "protocol-compliant-but-meaning-cor
 
 There is no honest path to claiming novelty for "a new fault class for protocol-compliant-but-semantically-wrong LLM agents." That framing is now well-trodden ground as of 2026. Your instinct to abandon defending it is correct.
 
-### A.3 What is NOT yet covered by any of the six
+### A.3 What is NOT yet covered by any of the six — CORRECTED after targeted full-text check
 
-This is the part that matters. Re-reading #1's and #2's own stated assumptions carefully:
+**This subsection was revised after the initial draft of this document overstated the gap. The correction is preserved here rather than silently edited out, because it materially changes the claim.**
 
-- **EBFT (#1)** treats correlated epistemic faults as an empirical *given* it bounds probabilistically (e_δ, u_ε), not something it explains the *origin* of or distinguishes by *source*.
-- **EFD/DAQC (#2)** formalizes correlation through an explicit, *modeled, observable* Epistemic Fault Basis — i.e., correlation that flows through **runtime provenance**: shared tool calls, shared telemetry sources, shared document stores. Its own benchmark is built entirely around this: each task's evidence packages are "rooted in distinct modeled evidence roots" (CloudWatch metric, VPC flow analyzer, DB transaction status — all runtime data sources). κ_E is defined over a dependency graph that DAQC can observe and cut at admission time.
-- **#5 and #6**, however, independently demonstrate a *second, different* correlation channel: errors correlated **across agents with no shared runtime dependency at all** — different providers, different architectures, and in #6's strongest case, correlated even on adversarially decorrelated (random-string) tasks with no shared document, tool, or telemetry source in sight. This correlation is attributed to shared *training corpora and optimization objectives* — i.e., it is baked into model weights before the runtime dependency graph DAQC models even exists.
+The original version of this section claimed that DAQC's (#2) Epistemic Fault Basis models only *runtime/structural* dependencies and never engages shared training lineage at all. A targeted check against text surfaced directly from the paper (search-engine-indexed passages, not the full PDF — see caveat below) shows this is **false as a blanket claim**. The paper's own framing states that correlated epistemic faults arise when validators "share model weights or lineage, training distributions, prompts, retrieval sources, toolchains, evidence, reasoning scaffolds, and provider infrastructure," and explicitly names **"endpoint, service, upstream-data, availability-zone, and provider bases"** as distinct, valid instantiations of an Epistemic Fault Basis — i.e., DAQC's formalism *already contemplates* a basis built around shared model provider/weights/training lineage ("provider basis"), not only runtime data flow. Claiming to have found a channel their theory misses would not survive contact with this text, and is withdrawn.
 
-**Neither #1 nor #2 engages with #5/#6's finding.** Neither #5 nor #6 engages with #1/#2's quorum/fault-tolerance framing, DAQC's admission-control mechanism, or the question of whether a structural cut (κ_E) is sufficient once this second channel is accounted for. No paper in this set asks the direct question: *if DAQC enforces κ_E-safety (cuts every modeled structural dependency it knows about), does the quorum's false-consensus rate actually drop to the level its safety guarantee implies — or does weight-level correlation reassert itself through a channel the model doesn't see?*
+What the same check also shows, however, is a narrower and still-real distinction between what DAQC's **theory names** and what its **reported benchmark operationalizes**:
 
-That is the gap. It is precise, it is falsifiable, and it is a direct, citable extension/stress-test of #2's own stated threat model, not a rebranding of #1.
+- The paper's actual 120-task benchmark is built entirely around an **evidence/upstream-data basis**: each task's evidence packages are rooted in distinct *runtime* data sources (a CloudWatch metric, a VPC flow-log analyzer, a database transaction-status check). This is the structural/runtime-dependency basis, not the provider/weight basis.
+- The paper states directly, in the context of its own simulated fault-injection setup, that **"whether actual models propagate that [modeled] fault into unsafe approvals is an empirical question left to endpoint execution."** In other words: DAQC's own authors flag the real-LLM-behavioral question — does a real model, not a simulated/modeled fault event, actually produce correlated unsafe output — as open, for the basis type their reported experiments use, and (as far as the available evidence shows) they do not report an experiment that instantiates the *provider* basis with real, differently-trained LLM agents.
+- **#5 and #6** separately supply exactly the missing empirical magnitude for the provider/training-lineage channel — real cross-provider, cross-architecture correlated error, including a case with zero shared runtime dependency (#6's random-string condition) — but neither paper uses DAQC's quorum/admission-control/κ_E framing, and neither tests what happens when a *structural* cut is enforced while the *provider* basis is deliberately left uncut.
+
+**Revised gap statement:** No paper in this set closes the specific empirical question DAQC's own text leaves open for the provider-basis case: when a quorum is made κ_E-safe relative to the (more commonly operationalized) runtime/evidence-root basis — the case DAQC's own benchmark actually tests — does it remain exposed to correlated false consensus via the provider/training-lineage basis that their theory names but their reported experiments do not instantiate with real, differently-trained agents? This is not a claim that DAQC's *theory* has a blind spot; it is a claim that a specific, named, basis-type case their own paper flags as an open empirical question has not yet been closed, and that #5/#6 supply real-world evidence (not yet connected to κ_E or any admission-control mechanism) that the answer may well be "yes, and by a practically relevant margin."
+
+This is a genuinely narrower claim than the original draft of this document made, and it must be presented to any reviewer as an *extension of an explicitly-flagged open question in DAQC*, crediting DAQC for naming the provider-basis case, not as an independent discovery of a missing fault channel.
+
+**Caveat on this correction itself:** the passages quoted above were obtained through search-engine-indexed snippets of the paper, not a direct read of the full PDF end to end. It remains possible the full paper already reports a provider-basis experiment that these snippets did not surface. This remains the single highest-priority blocking item before submission (Part P) — the correction narrows the claimed gap but does not eliminate the need to read the primary source directly.
 
 ---
 
@@ -54,32 +60,37 @@ What survives, reframed as background rather than contribution: the *motivating 
 
 ---
 
-## PART C — Selected contribution
+## PART C — Selected contribution (REVISED after the A.3 correction)
 
 **Primary contribution:**
 
-> **An empirical and formal investigation of whether structural epistemic independence (as formalized by Epistemic Fault Domains / the Structural Epistemic Cut κ_E) is sufficient to bound false-consensus probability in LLM-agent quorums, or whether an orthogonal, non-structural correlation channel — parametric correlation induced by shared training lineage — persists even when all modeled runtime dependencies are cut, and must be treated as a second, independent admission-control dimension.**
+> **The first empirical, real-agent (endpoint-execution) test of DAQC's own named-but-unoperationalized "provider basis" case: whether a quorum made κ_E-safe relative to the runtime/evidence-root basis — the basis type DAQC's own reported 120-task benchmark actually instantiates — remains exposed to correlated false consensus via the provider/training-lineage basis, which DAQC's theory names but flags as an open empirical question ("left to endpoint execution") and which its own experiments do not, as far as verified, instantiate with real, differently-trained LLM agents.**
 
-Working name for the distinction: **structural epistemic independence** (what DAQC's κ_E targets: independence of tool calls, data sources, telemetry, document stores) vs. **parametric epistemic independence** (independence of training lineage: base model family, pretraining corpus, RLHF/alignment pipeline, fine-tuning data) — with the central testable hypothesis:
+This is explicitly framed as *closing a question DAQC's own paper leaves open*, not as identifying a channel absent from their theory. Terminology, revised to avoid implying otherwise:
 
-> **H1:** Holding structural independence fixed at κ_E-safe (no shared modeled fault root, per DAQC's own admission criterion), false-consensus rate is still significantly higher for agent sets drawn from the same training lineage than for agent sets drawn from independent training lineages.
+- **Structural (evidence-root) basis-safety**: the case DAQC's reported benchmark tests — independence of tool calls, telemetry, document/data stores. Unchanged from DAQC; we import κ_E computed over this basis without modification.
+- **Provider basis-safety**: DAQC's own named term for independence of model weights/training lineage/provider infrastructure — a basis type their formalism defines but, as far as verified, does not operationalize experimentally with real models in their reported results.
+
+Central testable hypothesis, restated to match the corrected framing:
+
+> **H1:** Among quorums that are κ_E-safe relative to the evidence-root/structural basis (i.e., pass DAQC's own tested admission criterion), false-consensus rate is still significantly higher when agents are drawn from the same provider/training lineage than when agents are drawn from independent provider/training lineages — i.e., structural-basis safety, as actually tested by DAQC's benchmark, does not by itself imply provider-basis safety.
 
 Two bounded supporting contributions:
 
-- **C1 (formal):** A proposition characterizing the relationship between κ_E-safety and false-consensus probability, showing the conditions under which κ_E-safety is necessary-but-not-sufficient (i.e., formalizing *why* H1 could be true without contradicting DAQC's own theorem, since DAQC's guarantee is stated relative to its *modeled* fault basis, and parametric correlation is by construction outside that basis).
-- **C2 (methodological):** A fault-injection benchmark protocol that, unlike DAQC's benchmark (which varies structural provenance) and unlike #5/#6 (which don't use a quorum/admission-control framing), varies **both axes orthogonally** (structural × parametric) so the interaction, not just each main effect, can be measured.
+- **C1 (formal):** A proposition, scoped strictly to DAQC's own multi-basis framework (not a competing theory), stating the condition under which structural-basis κ_E-safety leaves a residual, unbounded provider-basis risk — essentially a formal restatement, made precise, of what DAQC's own text already implies ("different bases make distinct resilience claims") but does not quantify.
+- **C2 (methodological):** A fault-injection benchmark protocol that, unlike DAQC's reported benchmark (single basis: evidence-root) and unlike #5/#6 (no quorum/admission-control framing, no κ_E), varies **both basis types orthogonally** (evidence-root × provider) with real LLM agents from multiple providers, so the interaction — not just DAQC's already-tested structural main effect — can be measured.
 
 ### Why a reviewer who knows EBFT/DAQC/H-CSC could reasonably call this new
 
-- It does not propose a new fault name — it takes DAQC's own fault basis formalism as given and asks a question DAQC's paper does not ask about its own mechanism: does cutting the modeled basis fully close the false-consensus gap, or only the structurally-mediated part of it?
-- It is falsifiable in a direction that could also vindicate DAQC (if H1 is rejected — i.e., κ_E-safety turns out sufficient in practice because parametric correlation is small relative to structural correlation — that is itself a publishable, useful negative result bounding when DAQC's guarantee is practically tight).
-- It sits at a genuine disciplinary seam: #5/#6 are ML-evaluation papers with no quorum/admission-control framing and no engagement with κ_E or DAQC; #1/#2/#3 are systems papers with no engagement with the ML-side finding that correlation exists without any modeled runtime dependency. Nobody has yet asked whether DAQC's guarantee, which is explicitly relative to *its own modeled basis*, is undermined by a channel that by construction cannot appear in that basis.
+- It does not claim DAQC's theory has a blind spot — it explicitly credits DAQC for naming the provider-basis case, and targets the specific empirical question their own paper states is open ("left to endpoint execution").
+- It supplies the missing link between two literatures that, as verified, do not cite or engage each other: DAQC (systems, quorum/admission-control framing, no real cross-provider experiment) and Kim et al./#6 (ML evaluation, real cross-provider correlated-error measurement, no quorum/admission-control framing at all).
+- It is falsifiable in a direction that could vindicate DAQC's practical sufficiency (if H1 is rejected, i.e., structural-basis safety turns out to already bound practical false-consensus risk well, that is a useful, publishable result — it would mean the provider-basis case DAQC names is a real but small-magnitude concern in practice).
 
-### What would kill this contribution (stated honestly, not hidden)
+### What would still kill or further narrow this contribution (stated honestly)
 
-- If H-CSC's embedding-derived semantic certification (#3) already implicitly absorbs parametric correlation effects into its commit/abort decision in a way that makes the structural/parametric distinction practically moot — this needs to be checked against the full H-CSC paper (only the abstract/summary was verified here) before submission.
-- If DAQC's Epistemic Fault Basis is, on reading the full paper, explicitly defined broadly enough to already include "shared model family" as a modeled fault root (the search summary did not surface this, but the full paper must be read, not just the abstract, before claiming the gap holds).
-- **Action required before this is submission-safe:** obtain and read the full text of #2 and #3 (not just search-engine summaries) to confirm neither already defines a parametric/training-lineage fault root in its basis. This document does not yet do that and should not be treated as having done it.
+- If a full read of #2's complete text reveals they *did* run a provider-basis instantiation (e.g., in an appendix, ablation, or follow-up section not surfaced by the indexed passages checked so far), the "first empirical test" claim must be withdrawn or narrowed to "first test using real production-grade agents on a general-purpose task suite" or similar — this is now the single highest-priority verification item (Part P).
+- If H-CSC (#3) already empirically shows its embedding-derived certification is provider-invariant in a way that makes the structural/provider distinction practically moot for a certified (not plain-voting) quorum — needs checking against #3's full text, not just its abstract.
+- **Action required before this is submission-safe (revised):** obtain and read the full text of #2, specifically searching for any reported provider-basis or cross-model-family experiment, before claiming "first." Search-engine-indexed passages are evidence, not proof of absence — a paper can report an experiment that a keyword search does not surface.
 
 ---
 
@@ -91,10 +102,10 @@ Two bounded supporting contributions:
 - A task t with an authoritative ground-truth predicate g(t) — used only for offline evaluation, not assumed available to agents at runtime (consistent with DAQC's benchmark design, which supplies an executable predicate per task for evaluation purposes only).
 - Each agent produces a protocol-conformant output m_i(t): a value plus supporting rationale, always well-formed (never malformed, never off-protocol — by construction of the experiment, agents are never given a reason to violate protocol; this isolates the phenomenon under study from ordinary crash/equivocation faults, which are already well handled by classical BFT and are explicitly out of scope).
 
-### D.2 The two independence axes
+### D.2 The two basis types (both named by DAQC; only one operationalized by its reported benchmark)
 
-- **Structural independence** between a_i, a_j: R(a_i) ∩ R(a_j) = ∅ at the level of DAQC's Epistemic Fault Basis — i.e., no shared modeled fault root. This is exactly DAQC's κ_E condition, imported unchanged; we do not redefine it.
-- **Parametric independence** between a_i, a_j: L(a_i) ≠ L(a_j) at a coarse level (different base model family and, where knowable, different major pretraining/alignment lineage). We do **not** claim this is a complete or principled formalization of "training similarity" — it is an operational proxy (model family/provider as a coarse label), and this limitation must be stated plainly in the manuscript, not hidden. A finer-grained notion (e.g., embedding-space distance between models' output distributions, as used for unrelated purposes in #3) is future work, not assumed here.
+- **Evidence-root / structural basis-independence** between a_i, a_j: R(a_i) ∩ R(a_j) = ∅ at the level of DAQC's Epistemic Fault Basis restricted to runtime evidence sources (tools, telemetry, data stores). This is exactly the basis type DAQC's reported 120-task benchmark tests; κ_E computed over it is imported unchanged, not redefined.
+- **Provider basis-independence** between a_i, a_j: L(a_i) ≠ L(a_j) at a coarse level (different base model family/provider and, where knowable, different major pretraining/alignment lineage). DAQC's own text names "provider basis" as a valid instantiation of its general framework; we adopt their term rather than inventing a new one. Operationalizing it here uses a coarse proxy (model family/provider as a label) that is **not** a complete or principled formalization of "training similarity" — this limitation must be stated plainly in the manuscript, not hidden. A finer-grained notion (e.g., embedding-space distance between models' output distributions, as used for a different purpose in #3) is future work, not assumed here.
 
 ### D.3 Precise statement of what classical BFT and EBFT/DAQC do and do not guarantee
 

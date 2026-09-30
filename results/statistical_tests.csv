@@ -1,0 +1,2 @@
+test_name,group1,group1_successes,group1_n,group2,group2_successes,group2_n,p1,p2,z_stat,p_value,risk_difference,risk_difference_ci_low,risk_difference_ci_high,note,DATA_LABEL
+primary_H1_two_proportion_ztest,low_correlation,2,200,high_correlation,27,200,0.01,0.135,-4.820410797487017,1.432629057978306e-06,0.125,0.0756736988964595,0.1743263011035405,"Smoke-test N (200/group), NOT the pre-registered N=350/group from POWER_ANALYSIS.md -- underpowered by design; demonstrates the analysis code runs correctly end-to-end.",SYNTHETIC VALIDATION DATA -- NOT RESEARCH RESULTS

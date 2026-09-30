@@ -1,0 +1,36 @@
+{
+  "label": "SYNTHETIC VALIDATION DATA -- NOT RESEARCH RESULTS",
+  "results": {
+    "NEGATIVE_CONTROL_rho=0": {
+      "rho_planted": 0.0,
+      "p": 0.1,
+      "n_tasks": 500,
+      "n_agents": 5,
+      "estimated_phi": 0.041829483408514695,
+      "phi_p_value": 0.47225011140033235,
+      "observed_false_consensus_rate": 0.016,
+      "fc_ci": [
+        0.006,
+        0.028
+      ],
+      "theoretical_false_consensus_rate": 0.008560000000000012
+    },
+    "POSITIVE_CONTROL_rho=0.5": {
+      "rho_planted": 0.5,
+      "p": 0.1,
+      "n_tasks": 500,
+      "n_agents": 5,
+      "estimated_phi": 0.6124234806895947,
+      "phi_p_value": 2.491209808223259e-41,
+      "observed_false_consensus_rate": 0.078,
+      "fc_ci": [
+        0.054,
+        0.10404999999999973
+      ],
+      "theoretical_false_consensus_rate": 0.08423799999999981
+    }
+  },
+  "negative_control_passed": true,
+  "positive_control_passed": true,
+  "overall_passed": true
+}
